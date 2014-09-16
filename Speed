@@ -1,0 +1,221 @@
+
+#include <a_samp>
+//=======================================
+#define SERVER_WEBSITE "www.Esm WEbSaitet.ir"
+//#define ENABLEBOX // age mikhat in fall kon khodat test kon :D
+#define STR_SIZE 256
+forward UpdateSpeedoMeter();
+//=======================================
+new
+	Text:SpeedBar[MAX_PLAYERS],
+	Text:HealthBar[MAX_PLAYERS],
+	Text:BoxTextdraw[MAX_PLAYERS],
+	Text:SpeedAndHealthText[MAX_PLAYERS],
+	Text:TireDamage[MAX_PLAYERS],
+	Text:VehicleInformation[MAX_PLAYERS],
+	Text:TireDamageText[MAX_PLAYERS],
+	Text:ServerWebsite[MAX_PLAYERS],
+	Speedostring[STR_SIZE],
+	SpeedoTimer;
+
+new VehicleNames[][] = {
+	"Landstalker","Bravura","Buffalo","Linerunner","Pereniel","Sentinel","Dumper","Firetruck","Trashmaster","Stretch","Manana","Infernus","Voodoo","Pony","Mule","Cheetah","Ambulance","Leviathan","Moonbeam","Esperanto",
+	"Taxi","Washington","Bobcat","Mr Whoopee","BF Injection","Hunter","Premier","Enforcer","Securicar","Banshee","Predator","Bus","Rhino","Barracks","Hotknife","Trailer","Previon","Coach","Cabbie","Stallion",
+	"Rumpo","RC Bandit","Romero","Packer","Monster","Admiral","Squalo","Seasparrow","Pizzaboy","Tram","Trailer","Turismo","Speeder","Reefer","Tropic","Flatbed","Yankee","Caddy","Solair","Berkley's RC Van",
+	"Skimmer","PCJ-600","Faggio","Freeway","RC Baron","RC Raider","Glendale","Oceanic","Sanchez","Sparrow","Patriot","Quad","Coastguard","Dinghy","Hermes","Sabre","Rustler","ZR3 50","Walton","Regina",
+	"Comet","BMX","Burrito","Camper","Marquis","Baggage","Dozer","Maverick","News Chopper","Rancher","FBI Rancher","Virgo","Greenwood","Jetmax","Hotring","Sandking","Blista Compact","Police Maverick","Boxville","Benson",
+	"Mesa","RC Goblin","Hotring Racer","Hotring Racer","Bloodring Banger","Rancher","Super GT","Elegant","Journey","Bike","Mountain Bike","Beagle","Cropdust","Stunt","Tanker","RoadTrain","Nebula","Majestic","Buccaneer","Shamal",
+	"Hydra","FCR-900","NRG-500","HPV1000","Cement Truck","Tow Truck","Fortune","Cadrona","FBI Truck","Willard","Forklift","Tractor","Combine","Feltzer","Remington","Slamvan","Blade","Freight","Streak","Vortex",
+	"Vincent","Bullet","Clover","Sadler","Firetruck","Hustler","Intruder","Primo","Cargobob","Tampa","Sunrise","Merit","Utility","Nevada","Yosemite","Windsor","Monster","Monster","Uranus","Jester",
+	"Sultan","Stratum","Elegy","Raindance","RC Tiger","Flash","Tahoma","Savanna","Bandito","Freight","Trailer","Kart","Mower","Duneride","Sweeper","Broadway","Tornado","AT-400","DFT-30","Huntley",
+	"Stafford","BF-400","Newsvan","Tug","Trailer","Emperor","Wayfarer","Euros","Hotdog","Club","Trailer","Trailer","Andromada","Dodo","RC Cam","Launch","Police Car (LSPD)","Police Car (SFPD)","Police Car (LVPD)","Police Ranger",
+	"Picador","S.W.A.T. Van","Alpha","Phoenix","Glendale","Sadler","Luggage Trailer","Luggage Trailer","Stair Trailer","Boxville","Farm Plow","Utility Trailer"
+};
+//=======================================
+public OnFilterScriptInit() {
+	for(new i; i < GetMaxPlayers(); i ++ ) {
+	    SpeedBar[i] = TextDrawCreate(484.000000,305.000000,"~g~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.~n~");
+		HealthBar[i] = TextDrawCreate(584.000000,305.000000,"~r~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.~n~");
+		BoxTextdraw[i] = TextDrawCreate(602.000000,308.000000,"_");
+		SpeedAndHealthText[i] = TextDrawCreate(476.000000,408.000000,"Speed                         Health");
+		TireDamage[i] = TextDrawCreate(517.000000,402.000000,"~n~~g~| | | |");
+		VehicleInformation[i] = TextDrawCreate(494.000000,316.000000,"~y~Model~n~Speed~n~Health");
+		TireDamageText[i] = TextDrawCreate(513.000000,402.000000,"Tire Damage");
+		ServerWebsite[i] = TextDrawCreate(495.000000,361.000000, SERVER_WEBSITE);
+		#if defined ENABLEBOX
+		    TextDrawUseBox(BoxTextdraw[i], 1);
+		#endif
+		TextDrawAlignment(SpeedBar[i],0);
+		TextDrawAlignment(HealthBar[i],0);
+		TextDrawAlignment(BoxTextdraw[i],0);
+		TextDrawAlignment(SpeedAndHealthText[i],0);
+		TextDrawAlignment(TireDamage[i],0);
+		TextDrawAlignment(VehicleInformation[i],0);
+		TextDrawAlignment(TireDamageText[i],0);
+		TextDrawAlignment(ServerWebsite[i],0);
+		TextDrawBackgroundColor(SpeedBar[i],0x000000ff);
+		TextDrawBackgroundColor(HealthBar[i],0x000000ff);
+		TextDrawBackgroundColor(BoxTextdraw[i],0x000000ff);
+		TextDrawBackgroundColor(SpeedAndHealthText[i],0x000000ff);
+		TextDrawBackgroundColor(TireDamage[i],0x000000ff);
+		TextDrawBackgroundColor(VehicleInformation[i],0x000000ff);
+		TextDrawBackgroundColor(TireDamageText[i],0x000000ff);
+
+		TextDrawBackgroundColor(ServerWebsite[i],0x000000ff);
+		TextDrawFont(SpeedBar[i],1);
+		TextDrawLetterSize(SpeedBar[i],0.300000,0.899999);
+		TextDrawFont(HealthBar[i],1);
+		TextDrawLetterSize(HealthBar[i],0.299999,0.899999);
+		TextDrawFont(BoxTextdraw[i],3);
+		TextDrawLetterSize(BoxTextdraw[i],1.000000,11.999995);
+		TextDrawFont(SpeedAndHealthText[i],1);
+		TextDrawLetterSize(SpeedAndHealthText[i],0.199999,1.000000);
+		TextDrawFont(TireDamage[i],1);
+		TextDrawLetterSize(TireDamage[i],0.299999,1.000000);
+		TextDrawFont(VehicleInformation[i],1);
+		TextDrawLetterSize(VehicleInformation[i],0.199999,1.000000);
+		TextDrawFont(TireDamageText[i],1);
+		TextDrawLetterSize(TireDamageText[i],0.199999,1.000000);
+		TextDrawFont(ServerWebsite[i],0);
+		TextDrawLetterSize(ServerWebsite[i],0.299999,1.200000);
+		TextDrawColor(SpeedBar[i],0xffffffff);
+		TextDrawColor(HealthBar[i],0xffffffff);
+		TextDrawColor(BoxTextdraw[i],0xffffffff);
+		TextDrawColor(SpeedAndHealthText[i],0xffffffff);
+		TextDrawColor(VehicleInformation[i],0xffffffff);
+		TextDrawColor(TireDamageText[i],0xffffffff);
+		TextDrawColor(ServerWebsite[i],0xffffffff);
+		TextDrawSetOutline(SpeedBar[i],1);
+		TextDrawSetOutline(HealthBar[i],1);
+		TextDrawSetOutline(BoxTextdraw[i],1);
+		TextDrawSetOutline(SpeedAndHealthText[i],1);
+		TextDrawSetOutline(TireDamage[i],1);
+		TextDrawSetOutline(VehicleInformation[i],1);
+		TextDrawSetOutline(TireDamageText[i],1);
+		TextDrawSetOutline(ServerWebsite[i],1);
+		TextDrawSetProportional(SpeedBar[i],1);
+		TextDrawSetProportional(HealthBar[i],1);
+		TextDrawSetProportional(BoxTextdraw[i],1);
+		TextDrawSetProportional(SpeedAndHealthText[i],1);
+		TextDrawSetProportional(TireDamage[i],1);
+		TextDrawSetProportional(VehicleInformation[i],1);
+		TextDrawSetProportional(TireDamageText[i],1);
+		TextDrawSetProportional(ServerWebsite[i],1);
+		TextDrawSetShadow(SpeedBar[i],1);
+		TextDrawSetShadow(HealthBar[i],1);
+		TextDrawSetShadow(BoxTextdraw[i],1);
+		TextDrawSetShadow(SpeedAndHealthText[i],1);
+		TextDrawSetShadow(TireDamage[i],1);
+		TextDrawSetShadow(VehicleInformation[i],1);
+		TextDrawSetShadow(TireDamageText[i],1);
+		TextDrawSetShadow(ServerWebsite[i],1);
+	}
+	SpeedoTimer = SetTimer("UpdateSpeedoMeter", 500, 1);
+	return 1;
+}
+public OnFilterScriptExit() {
+	KillTimer(SpeedoTimer);
+	return 1;
+}
+public UpdateSpeedoMeter() {
+	for(new playerid; playerid < GetMaxPlayers(); playerid++ ){
+		if(!IsPlayerConnected(playerid)) continue;
+		if(IsPlayerInAnyVehicle(playerid)) {
+			new
+				Float:vHealth,
+				Float:vVelocity[3],
+				vname[30];
+
+			TextDrawHideForPlayer(playerid, SpeedBar[playerid]);
+		    TextDrawHideForPlayer(playerid, HealthBar[playerid]);
+		    TextDrawHideForPlayer(playerid, BoxTextdraw[playerid]);
+		    TextDrawHideForPlayer(playerid, SpeedAndHealthText[playerid]);
+		    TextDrawHideForPlayer(playerid, TireDamage[playerid]);
+		    TextDrawHideForPlayer(playerid, VehicleInformation[playerid]);
+		    TextDrawHideForPlayer(playerid, TireDamageText[playerid]);
+		    TextDrawHideForPlayer(playerid, ServerWebsite[playerid]);
+		    GetVehicleHealth(GetPlayerVehicleID(playerid), vHealth);
+			GetVehicleVelocity(GetPlayerVehicleID(playerid), vVelocity[0], vVelocity[1], vVelocity[2]);
+			new Float: vSpeed = floatsqroot(floatpower(vVelocity[0], 2) + floatpower(vVelocity[1], 2) + floatpower(vVelocity[2], 2)) * 99;
+			GetVehicleName(GetVehicleModel(GetPlayerVehicleID(playerid)), vname, sizeof(vname));
+		    format(Speedostring, STR_SIZE, "~y~%s~n~%0.0f MPH~n~%0.0f", vname, vSpeed, vHealth);
+			TextDrawSetString(VehicleInformation[playerid], Speedostring);
+			if(vSpeed <= 5) TextDrawSetString(SpeedBar[playerid], "~g~.");
+			if(vSpeed >= 6 && vSpeed <= 10) TextDrawSetString(SpeedBar[playerid], "~g~.~n~.");
+			if(vSpeed >= 11 && vSpeed <= 15) TextDrawSetString(SpeedBar[playerid], "~g~.~n~.~n~.");
+			if(vSpeed >= 16 && vSpeed <= 20) TextDrawSetString(SpeedBar[playerid], "~g~.~n~.~n~.~n~.");
+			if(vSpeed >= 21 && vSpeed <= 25) TextDrawSetString(SpeedBar[playerid], "~g~.~n~.~n~.~n~.~n~.");
+			if(vSpeed >= 26 && vSpeed <= 30) TextDrawSetString(SpeedBar[playerid], "~g~.~n~.~n~.~n~.~n~.~n~.");
+			if(vSpeed >= 31 && vSpeed <= 40) TextDrawSetString(SpeedBar[playerid], "~g~.~n~.~n~.~n~.~n~.~n~.~n~.");
+			if(vSpeed >= 41 && vSpeed <= 50) TextDrawSetString(SpeedBar[playerid], "~g~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.");
+			if(vSpeed >= 51 && vSpeed <= 60) TextDrawSetString(SpeedBar[playerid], "~g~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.");
+			if(vSpeed >= 61 && vSpeed <= 70) TextDrawSetString(SpeedBar[playerid], "~g~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.");
+			if(vSpeed >= 71 && vSpeed <= 80) TextDrawSetString(SpeedBar[playerid], "~g~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.");
+			if(vSpeed >= 81 && vSpeed <= 85) TextDrawSetString(SpeedBar[playerid], "~g~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.");
+			if(vSpeed >= 86 && vSpeed <= 90) TextDrawSetString(SpeedBar[playerid], "~g~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.");
+			if(vSpeed >= 91 && vSpeed <= 100) TextDrawSetString(SpeedBar[playerid], "~g~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.");
+			if(vHealth <= 50) TextDrawSetString(SpeedBar[playerid], "~r~."); // 13
+			if(vHealth >= 60 && vHealth <= 100) TextDrawSetString(HealthBar[playerid], "~g~.~n~.");
+			if(vHealth >= 110 && vHealth <= 150) TextDrawSetString(HealthBar[playerid], "~r~.~n~.~n~.");
+			if(vHealth >= 160 && vHealth <= 200) TextDrawSetString(HealthBar[playerid], "~r~.~n~.~n~.~n~.");
+			if(vHealth >= 210 && vHealth <= 250) TextDrawSetString(HealthBar[playerid], "~r~.~n~.~n~.~n~.~n~.");
+			if(vHealth >= 260 && vHealth <= 300) TextDrawSetString(HealthBar[playerid], "~r~.~n~.~n~.~n~.~n~.~n~.");
+			if(vHealth >= 310 && vHealth <= 400) TextDrawSetString(HealthBar[playerid], "~r~.~n~.~n~.~n~.~n~.~n~.~n~.");
+			if(vHealth >= 410 && vHealth <= 500) TextDrawSetString(HealthBar[playerid], "~r~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.");
+			if(vHealth >= 510 && vHealth <= 600) TextDrawSetString(HealthBar[playerid], "~r~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.");
+			if(vHealth >= 610 && vHealth <= 700) TextDrawSetString(HealthBar[playerid], "~r~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.");
+			if(vHealth >= 710 && vHealth <= 800) TextDrawSetString(HealthBar[playerid], "~r~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.");
+			if(vHealth >= 810 && vHealth <= 850) TextDrawSetString(HealthBar[playerid], "~r~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.");
+			if(vHealth >= 860 && vHealth <= 900) TextDrawSetString(HealthBar[playerid], "~r~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.");
+			if(vHealth >= 910 && vHealth <= 1000) TextDrawSetString(HealthBar[playerid], "~r~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.~n~.");
+	        new panels,doors,lights,tires;
+			GetVehicleDamageStatus(GetPlayerVehicleID(playerid),panels,doors,lights,tires);
+			switch(tires) {
+			    case 0: TextDrawSetString(TireDamage[playerid], "~n~~g~| | | |");
+			    case 1: TextDrawSetString(TireDamage[playerid], "~n~~g~| | | ~r~|");
+			    case 2: TextDrawSetString(TireDamage[playerid], "~n~~g~| | ~r~| ~g~|");
+			    case 3: TextDrawSetString(TireDamage[playerid], "~n~~g~| | ~r~| |");
+			    case 4: TextDrawSetString(TireDamage[playerid], "~n~~g~~r~| ~g~| | |");
+			    case 5: TextDrawSetString(TireDamage[playerid], "~n~~r~| | ~g~| |");
+			    case 6: TextDrawSetString(TireDamage[playerid], "~n~~g~~r~| ~g~| ~r~| ~g~|");
+			    case 7: TextDrawSetString(TireDamage[playerid], "~n~~g~| ~r~| | |");
+			    case 8: TextDrawSetString(TireDamage[playerid], "~n~~g~| ~r~| ~g~| |");
+			    case 9: TextDrawSetString(TireDamage[playerid], "~n~~g~~g~| ~r~| ~g~| ~r~|");
+			    case 10: TextDrawSetString(TireDamage[playerid], "~n~~g~| | ~r~| |");
+			    case 11: TextDrawSetString(TireDamage[playerid], "~n~~g~| ~r~| | |");
+			    case 12: TextDrawSetString(TireDamage[playerid], "~n~~r~| | ~g~| |");
+			    case 13: TextDrawSetString(TireDamage[playerid], "~n~~g~| ~r~| | |");
+			    case 14: TextDrawSetString(TireDamage[playerid], "~n~~r~| ~g~| ~r~| |");
+			    case 15: TextDrawSetString(TireDamage[playerid], "~n~~r~| | | |");
+			}
+			TextDrawShowForPlayer(playerid, SpeedBar[playerid]);
+		    TextDrawShowForPlayer(playerid, HealthBar[playerid]);
+		    TextDrawShowForPlayer(playerid, BoxTextdraw[playerid]);
+		    TextDrawShowForPlayer(playerid, SpeedAndHealthText[playerid]);
+		    TextDrawShowForPlayer(playerid, TireDamage[playerid]);
+		    TextDrawShowForPlayer(playerid, VehicleInformation[playerid]);
+		    TextDrawShowForPlayer(playerid, TireDamageText[playerid]);
+		    TextDrawShowForPlayer(playerid, ServerWebsite[playerid]);
+		}
+		else {
+		    TextDrawHideForPlayer(playerid, SpeedBar[playerid]);
+		    TextDrawHideForPlayer(playerid, HealthBar[playerid]);
+		    TextDrawHideForPlayer(playerid, BoxTextdraw[playerid]);
+		    TextDrawHideForPlayer(playerid, SpeedAndHealthText[playerid]);
+		    TextDrawHideForPlayer(playerid, TireDamage[playerid]);
+		    TextDrawHideForPlayer(playerid, VehicleInformation[playerid]);
+		    TextDrawHideForPlayer(playerid, TireDamageText[playerid]);
+		    TextDrawHideForPlayer(playerid, ServerWebsite[playerid]);
+		}
+	}
+}
+//=======================================
+
+stock GetVehicleName(modelid,name[],namesize)
+{
+	if(modelid < 400 || modelid > 611) return 0;
+	modelid -= 400;
+	for(new i, len = strlen(VehicleNames[modelid]); i < len && i < namesize; i++)
+	    name[i] = VehicleNames[modelid][i];
+	return 1;
+}
